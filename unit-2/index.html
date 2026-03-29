@@ -69,7 +69,7 @@
                 <div id="feedback" class="h-8 text-lg font-semibold mb-4 transition-all opacity-0"></div>
                 
                 <!-- Answer Reveal -->
-                <div id="answer-reveal" class="hidden p-4 bg-amber-50 text-amber-700 rounded-xl mb-6 border border-amber-200">
+                <div id="answer-reveal" class="hidden p-4 bg-amber-50 text-amber-700 rounded-xl mb-6 border border-amber-200 text-left">
                     <p class="text-sm font-bold uppercase mb-1">Correct Answer:</p>
                     <p id="correct-answer-text" class="text-lg italic"></p>
                 </div>
@@ -124,19 +124,19 @@
         const sentences = [
             "There is a small park near my house.",
             "There are lots of apples in her garden.",
-            "There isn’t a supermarket in the city center.",
-            "There aren’t any buses on this street at night.",
+            "There isn't a supermarket in the city center.",
+            "There aren't any buses on this street at night.",
             "There is a cat under the table in the kitchen.",
             "There are some books on the desk in my bedroom.",
-            "There isn’t a cat in their farm.",
-            "There aren’t any people in the park in the morning.",
+            "There isn't a cat in their farm.",
+            "There aren't any people in the park in the morning.",
             "There is a restaurant on this street.",
             "There are many flowers in the garden in spring.",
-            "There isn’t any milk in the fridge.",
-            "There aren’t any chairs in the room.",
+            "There isn't any milk in the fridge.",
+            "There aren't any chairs in the room.",
             "There is a new shop near my house.",
             "There are some children in the playground.",
-            "There isn’t a hospital in his town."
+            "There isn't a hospital in his town."
         ];
 
         let shuffledQuestions = [];
@@ -146,7 +146,6 @@
         let totalWrong = 0;
         const praiseList = ["Well done!", "Good job!", "Excellent!", "Very good!"];
 
-        // Utility: Shuffle array
         function shuffle(array) {
             let currentIndex = array.length, randomIndex;
             while (currentIndex != 0) {
@@ -157,24 +156,19 @@
             return array;
         }
 
-        // TTS Settings
         const synth = window.speechSynthesis;
         function speak(text, rate = 0.8) {
-            synth.cancel(); // Stop current speech
+            synth.cancel();
             const utter = new SpeechSynthesisUtterance(text);
-            
-            // Try to find a clear female voice
             const voices = synth.getVoices();
             const femaleVoice = voices.find(v => (v.name.includes('Female') || v.name.includes('Google US English') || v.name.includes('Samantha')));
             if (femaleVoice) utter.voice = femaleVoice;
-            
             utter.lang = 'en-US';
             utter.rate = rate;
             utter.pitch = 1.0;
             synth.speak(utter);
         }
 
-        // Initialize Game
         function initGame() {
             shuffledQuestions = shuffle([...sentences]);
             currentIndex = 0;
@@ -189,7 +183,6 @@
             const scrambled = shuffle([...words]);
             attempts = 0;
 
-            // UI Reset
             document.getElementById('progress-text').innerText = `Question ${currentIndex + 1} of ${sentences.length}`;
             document.getElementById('score-text').innerText = `Score: ${totalCorrect}`;
             document.getElementById('progress-bar').style.width = `${((currentIndex) / sentences.length) * 100}%`;
@@ -199,7 +192,6 @@
             document.getElementById('btn-check').classList.remove('hidden');
             document.getElementById('quiz-content').classList.remove('shake', 'correct-anim');
 
-            // Render Scrambled Pool
             const pool = document.getElementById('word-pool');
             pool.innerHTML = '';
             scrambled.forEach(word => {
@@ -209,7 +201,6 @@
                 pool.appendChild(span);
             });
 
-            // Render Input Slots
             const inputContainer = document.getElementById('input-container');
             inputContainer.innerHTML = '';
             words.forEach((_, i) => {
@@ -218,21 +209,26 @@
                 input.className = 'w-full sm:w-28 border-b-2 border-slate-300 focus:border-blue-500 outline-none text-center py-2 text-lg font-semibold transition-colors bg-transparent';
                 input.placeholder = `Word ${i + 1}`;
                 input.dataset.index = i;
-                
-                // Add Enter support
                 input.addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') checkAnswer();
                 });
-
                 inputContainer.appendChild(input);
             });
 
-            // Focus first input on load
             setTimeout(() => {
                 const firstInput = inputContainer.querySelector('input');
                 if (firstInput) firstInput.focus();
-                speak(sentence); // Auto-speak on start
+                speak(sentence);
             }, 500);
+        }
+
+        // CHUẨN HÓA CHUỖI ĐỂ SO SÁNH
+        function normalizeText(text) {
+            return text
+                .toLowerCase()
+                .replace(/[’‘`´]/g, "'") // Đưa tất cả các loại dấu nháy về dấu nháy thẳng chuẩn
+                .replace(/[.,!?;:]/g, '') // Loại bỏ dấu câu
+                .trim();
         }
 
         function checkAnswer() {
@@ -243,22 +239,16 @@
             const feedback = document.getElementById('feedback');
             const container = document.getElementById('quiz-content');
 
-            if (userAnswer.toLowerCase().replace(/[.,!?;:]/g, '') === correctAnswer.toLowerCase().replace(/[.,!?;:]/g, '')) {
-                // CORRECT
+            if (normalizeText(userAnswer) === normalizeText(correctAnswer)) {
                 totalCorrect++;
                 feedback.innerText = praiseList[Math.floor(Math.random() * praiseList.length)];
                 feedback.className = 'h-8 text-lg font-semibold mb-4 opacity-100 text-emerald-600';
                 container.classList.add('correct-anim');
-                
                 speak(feedback.innerText, 1.0);
-                
                 document.getElementById('btn-check').classList.add('hidden');
                 document.getElementById('btn-next').classList.remove('hidden');
-                
-                // Disable inputs
                 inputs.forEach(i => i.disabled = true);
             } else {
-                // WRONG
                 attempts++;
                 totalWrong++;
                 container.classList.add('shake');
@@ -271,7 +261,6 @@
                 if (attempts >= 3) {
                     showAnswer();
                 } else {
-                    // Clear inputs for retry
                     inputs.forEach(i => {
                         i.value = '';
                         i.classList.add('border-rose-300');
@@ -286,10 +275,8 @@
             const correctText = document.getElementById('correct-answer-text');
             correctText.innerText = shuffledQuestions[currentIndex];
             reveal.classList.remove('hidden');
-            
             document.getElementById('btn-check').classList.add('hidden');
             document.getElementById('btn-next').classList.remove('hidden');
-            
             speak("Let's look at the answer", 0.9);
         }
 
@@ -306,22 +293,17 @@
             document.getElementById('quiz-content').classList.add('hidden');
             document.getElementById('progress-bar').parentElement.parentElement.classList.add('hidden');
             document.getElementById('result-screen').classList.remove('hidden');
-            
             document.getElementById('final-correct').innerText = totalCorrect;
             document.getElementById('final-wrong').innerText = totalWrong;
-            
             speak("Well done! You have completed the quiz.", 0.9);
         }
 
-        // Event Listeners
         document.getElementById('btn-listen').addEventListener('click', () => {
             speak(shuffledQuestions[currentIndex]);
         });
-
         document.getElementById('btn-check').addEventListener('click', checkAnswer);
         document.getElementById('btn-next').addEventListener('click', nextQuestion);
 
-        // Global Key Listener for Enter on the whole page
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 if (!document.getElementById('btn-check').classList.contains('hidden')) {
@@ -331,11 +313,6 @@
                 }
             }
         });
-
-        // Load voices before starting
-        window.speechSynthesis.onvoiceschanged = () => {
-            // Some browsers require this to load voices
-        };
 
         window.onload = initGame;
     </script>
