@@ -55,14 +55,21 @@
             display: none;
         }
 
-        .word-display-box {
-            background: #eff6ff;
-            border: 3px dashed #3b82f6;
-            border-radius: 24px;
-            padding: 3rem 1rem;
-            margin-bottom: 2rem;
+        .img-container {
+            width: 250px;
+            height: 250px;
+            margin: 0 auto 1.5rem;
+            position: relative;
+            overflow: hidden;
+            border-radius: 20px;
+            background: #e2e8f0;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+
+        .img-container img {
             width: 100%;
-            max-width: 400px;
+            height: 100%;
+            object-fit: cover;
         }
     </style>
 </head>
@@ -191,21 +198,20 @@
             if (synth.speaking) synth.cancel();
             let utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'en-US';
-            utterance.rate = 0.7; // Slightly slower for clarity
+            utterance.rate = 0.75;
             let voices = synth.getVoices();
-            let femaleVoice = voices.find(v => v.name.includes('Female') || v.name.includes('Google US English') || v.name.includes('Zira'));
+            let femaleVoice = voices.find(v => v.name.includes('Female') || v.name.includes('Google US English'));
             if (femaleVoice) utterance.voice = femaleVoice;
             synth.speak(utterance);
         }
 
         function startQuiz() {
-            // Select random words for the quiz session
-            const group1 = getRandomItems(DATA.singular, 5);
-            const group2 = getRandomItems(DATA.plural, 5);
-            const group3 = getRandomItems(DATA.uncountable, 5);
-            
-            // Pool them and shuffle
-            selectedWords = [...group1, ...group2, ...group3].sort(() => 0.5 - Math.random());
+            // Group 1: 5 words for Section 1
+            // Group 2: 5 words for Section 2
+            // Group 3: 5 words for Section 3
+            // We need a mix from all categories for every section
+            const allPool = [...DATA.singular, ...DATA.plural, ...DATA.uncountable];
+            selectedWords = getRandomItems(allPool, 15);
 
             document.getElementById('start-screen').classList.add('hidden-section');
             document.getElementById('quiz-screen').classList.remove('hidden-section');
@@ -235,17 +241,23 @@
 
         function renderSection1(item) {
             const container = document.getElementById('question-container');
+            // Image URL strategy: Using pixabay or unplash with query
+            const imgUrl = `https://loremflickr.com/400/400/${item.word.split(' ')[0]}`;
+            
             container.innerHTML = `
-                <div class="word-display-box flex flex-col items-center justify-center">
-                    <h2 class="text-5xl font-extrabold capitalize text-blue-800 tracking-tight mb-6">${item.word}</h2>
-                    <button onclick="speak('${item.word}')" class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-full font-bold hover:bg-blue-700 shadow-md transition-all">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-                        Listen Again
+                <div class="img-container">
+                    <img src="${imgUrl}" alt="${item.word}" onerror="this.src='https://via.placeholder.com/400?text=${item.word}'">
+                </div>
+                <div class="mb-6">
+                    <button onclick="speak('${item.word}')" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-full font-bold hover:bg-blue-200 transition-colors mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                        Listen
                     </button>
+                    <h2 class="text-4xl font-extrabold capitalize text-gray-800 tracking-tight">${item.word}</h2>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full px-4">
-                    <button onclick="checkAnswer('countable')" class="btn-option bg-white border-2 border-blue-500 text-blue-600 font-bold py-5 rounded-2xl hover:bg-blue-600 hover:text-white shadow-sm text-xl">Countable</button>
-                    <button onclick="checkAnswer('uncountable')" class="btn-option bg-white border-2 border-blue-500 text-blue-600 font-bold py-5 rounded-2xl hover:bg-blue-600 hover:text-white shadow-sm text-xl">Uncountable</button>
+                    <button onclick="checkAnswer('countable')" class="btn-option bg-white border-2 border-blue-500 text-blue-600 font-bold py-4 rounded-2xl hover:bg-blue-600 hover:text-white shadow-sm">Countable</button>
+                    <button onclick="checkAnswer('uncountable')" class="btn-option bg-white border-2 border-blue-500 text-blue-600 font-bold py-4 rounded-2xl hover:bg-blue-600 hover:text-white shadow-sm">Uncountable</button>
                 </div>
             `;
             speak(item.word);
@@ -254,25 +266,25 @@
         function renderSection2(item) {
             const container = document.getElementById('question-container');
             container.innerHTML = `
-                <div class="mb-10 p-8 bg-blue-100 rounded-3xl inline-block border-2 border-blue-200">
-                    <h2 class="text-4xl font-extrabold text-blue-800 capitalize">${item.word}</h2>
+                <div class="mb-8 p-6 bg-blue-50 rounded-3xl inline-block">
+                    <h2 class="text-3xl font-extrabold text-blue-800 capitalize">${item.word}</h2>
                 </div>
-                <div class="text-2xl md:text-3xl font-bold text-gray-800 mb-10 leading-loose flex flex-wrap justify-center items-center gap-3">
+                <div class="text-2xl md:text-3xl font-bold text-gray-800 mb-8 leading-loose flex flex-wrap justify-center items-center gap-2">
                     <span>There</span>
-                    <select id="verb-select" class="text-blue-600 font-black border-2 border-blue-300">
+                    <select id="verb-select" class="text-blue-600 font-black">
                         <option value="">--</option>
                         <option value="'s">'s</option>
                         <option value="are">are</option>
                     </select>
-                    <select id="article-select" class="text-blue-600 font-black border-2 border-blue-300">
+                    <select id="article-select" class="text-blue-600 font-black">
                         <option value="">--</option>
                         <option value="a">a</option>
                         <option value="an">an</option>
                         <option value="some">some</option>
                     </select>
-                    <span class="text-gray-800 underline decoration-blue-500 underline-offset-8">${item.word}</span>.
+                    <span class="text-gray-800 underline decoration-blue-300 underline-offset-8">${item.word}</span>.
                 </div>
-                <button onclick="checkSection2()" class="bg-blue-600 text-white px-12 py-4 rounded-2xl font-bold shadow-lg hover:bg-blue-700 transition-all text-xl">Check Answer</button>
+                <button onclick="checkSection2()" class="bg-blue-600 text-white px-10 py-4 rounded-2xl font-bold shadow-lg hover:bg-blue-700 transition-all">Check Answer</button>
             `;
             speak(item.word);
         }
@@ -280,19 +292,19 @@
         function renderSection3(item) {
             const container = document.getElementById('question-container');
             container.innerHTML = `
-                <div class="mb-8 p-8 bg-blue-100 rounded-3xl inline-block border-2 border-blue-200">
-                    <h2 class="text-4xl font-extrabold text-blue-800 capitalize">${item.word}</h2>
+                <div class="mb-6 p-6 bg-blue-50 rounded-3xl inline-block">
+                    <h2 class="text-3xl font-extrabold text-blue-800 capitalize">${item.word}</h2>
                 </div>
-                <div class="w-full max-w-lg mx-auto">
+                <div class="w-full max-w-md mx-auto">
                     <input type="text" id="answer-input" placeholder="Type the full sentence..." 
-                           class="w-full text-center text-xl md:text-2xl font-bold py-6 border-b-4 border-blue-300 focus:border-blue-600 bg-transparent transition-all"
+                           class="w-full text-center text-xl md:text-2xl font-bold py-5 border-b-4 border-blue-200 focus:border-blue-500 bg-transparent transition-all"
                            autocomplete="off">
-                    <p class="text-sm text-gray-500 mt-6 italic bg-white p-3 rounded-lg shadow-inner">Example: "There's an apple" or "There is some cheese"</p>
-                    <button onclick="checkSection3()" class="mt-8 bg-blue-600 text-white px-12 py-4 rounded-2xl font-bold shadow-lg hover:bg-blue-700 w-full text-xl">Submit Answer</button>
+                    <p class="text-sm text-gray-400 mt-4 italic">Example: "There's an apple" or "There are some cakes"</p>
+                    <button onclick="checkSection3()" class="mt-8 bg-blue-600 text-white px-12 py-4 rounded-2xl font-bold shadow-lg hover:bg-blue-700 w-full">Submit Answer</button>
                 </div>
             `;
             const input = document.getElementById('answer-input');
-            setTimeout(() => input.focus(), 150);
+            setTimeout(() => input.focus(), 100);
             input.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') checkSection3();
             });
@@ -327,18 +339,18 @@
                 nextBtn.classList.remove('hidden');
                 score++;
                 
-                // Speak full correct sentence
+                // Play correct sound (optional, here we use TTS)
                 speak(getCorrectSentence(item));
                 
-                // Disable active inputs
+                // Disable inputs
                 document.querySelectorAll('.btn-option, select, input, button:not(#next-btn)').forEach(el => el.disabled = true);
             } else {
                 attempts++;
-                feedback.innerText = "Incorrect! Please try again.";
+                feedback.innerText = "Incorrect! Try again.";
                 feedback.classList.add('text-red-600');
                 
                 if (attempts >= 3) {
-                    feedback.innerHTML = `<span class="text-xs text-gray-400 uppercase block mb-1">Correct Answer:</span> <span class="text-blue-800 text-lg">${getCorrectSentence(item)}</span>`;
+                    feedback.innerHTML = `<span class="text-sm text-gray-500 uppercase block mb-1">Answer:</span> <span class="text-blue-700">${getCorrectSentence(item)}</span>`;
                     nextBtn.classList.remove('hidden');
                     document.querySelectorAll('.btn-option, select, input, button:not(#next-btn)').forEach(el => el.disabled = true);
                 }
@@ -352,14 +364,14 @@
 
         function checkSection2() {
             let item = selectedWords[currentQuestionIndex];
-            let verbSelect = document.getElementById('verb-select').value;
-            let articleSelect = document.getElementById('article-select').value;
+            let verb = document.getElementById('verb-select').value;
+            let article = document.getElementById('article-select').value;
 
             const isVowel = /^[aeiou]/i.test(item.word);
             let correctVerb = (item.plural) ? "are" : "'s";
             let correctArticle = (item.type === 'uncountable' || item.plural) ? 'some' : (isVowel ? 'an' : 'a');
 
-            showFeedback(verbSelect === correctVerb && articleSelect === correctArticle);
+            showFeedback(verb === correctVerb && article === correctArticle);
         }
 
         function checkSection3() {
@@ -372,13 +384,12 @@
             let correctVerb = (item.plural) ? "are" : "is";
             let correctArticle = (item.type === 'uncountable' || item.plural) ? 'some' : (isVowel ? 'an' : 'a');
             
-            // Generate valid variations
-            let variations = [
+            let possibleAnswers = [
                 `there ${correctVerb} ${correctArticle} ${item.word}`.toLowerCase(),
                 `there${correctVerb === 'is' ? "'s" : "'re"} ${correctArticle} ${item.word}`.toLowerCase()
             ];
 
-            showFeedback(variations.includes(input));
+            showFeedback(possibleAnswers.includes(input));
         }
 
         function nextQuestion() {
@@ -394,18 +405,16 @@
             document.getElementById('final-score').innerText = score;
             
             let message = "";
-            if (score === 15) message = "Perfect! You're a Countable & Uncountable Master!";
-            else if (score >= 12) message = "Outstanding! Your English skills are very impressive.";
-            else if (score >= 8) message = "Good work! Keep practicing to improve even more.";
-            else message = "Never give up! Try again to get a higher score!";
+            if (score === 15) message = "Absolutely Perfect! You are a master of nouns!";
+            else if (score >= 12) message = "Brilliant job! You have a great command of the English language.";
+            else if (score >= 8) message = "Well done! A bit more practice and you will be a pro.";
+            else message = "Good effort! Let's try again to improve your grammar.";
             
             document.getElementById('stat-text').innerText = message;
         }
 
-        // Initialize voices on load
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.onvoiceschanged = () => synth.getVoices();
-        }
+        // Pre-load voices
+        window.speechSynthesis.onvoiceschanged = () => synth.getVoices();
     </script>
 </body>
 </html>
