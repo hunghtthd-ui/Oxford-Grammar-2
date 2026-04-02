@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Countable & Uncountable Nouns Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        }
+
+        .btn-primary {
+            transition: all 0.3s ease;
+            transform: translateY(0);
+        }
+
+        .btn-primary:active {
+            transform: translateY(2px);
+        }
+
+        .feedback-pop {
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        select, input {
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 8px 12px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        select:focus, input:focus {
+            border-color: #4a90e2;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 flex items-center justify-center">
+
+    <div id="app" class="w-full max-w-2xl glass-card p-6 md:p-10">
+        <!-- Start Screen -->
+        <div id="start-screen" class="text-center">
+            <h1 class="text-3xl font-bold text-blue-800 mb-4">English Grammar Practice</h1>
+            <p class="text-gray-600 mb-8">Master Countable and Uncountable Nouns with "There is/are" and "a/an/some".</p>
+            <button onclick="startQuiz()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-10 rounded-full text-xl shadow-lg btn-primary">
+                START QUIZ
+            </button>
+        </div>
+
+        <!-- Quiz Screen (Hidden by default) -->
+        <div id="quiz-screen" class="hidden">
+            <div class="flex justify-between items-center mb-6">
+                <span id="progress-text" class="font-semibold text-blue-600">Question 1/15</span>
+                <span id="attempts-text" class="text-sm text-orange-600 font-medium">Attempts: 0/3</span>
+            </div>
+
+            <div class="mb-8 min-h-[120px] flex flex-col justify-center">
+                <h2 id="part-title" class="text-sm uppercase tracking-widest text-gray-500 mb-2">Part 1: Multiple Choice</h2>
+                <div id="question-container" class="text-xl md:text-2xl font-medium text-gray-800 leading-relaxed">
+                    <!-- Question content will be injected here -->
+                </div>
+            </div>
+
+            <div id="feedback-area" class="h-16 mb-4 flex items-center justify-center text-center">
+                <!-- Feedback messages -->
+            </div>
+
+            <div class="flex flex-col gap-4">
+                <button id="check-btn" onclick="checkAnswer()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl shadow btn-primary">
+                    Check Answer
+                </button>
+                <button id="next-btn" onclick="nextQuestion()" class="hidden w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded-xl shadow btn-primary">
+                    Next Question
+                </button>
+            </div>
+        </div>
+
+        <!-- Result Screen (Hidden by default) -->
+        <div id="result-screen" class="hidden text-center">
+            <h2 class="text-4xl font-bold text-blue-800 mb-6">Finished!</h2>
+            <div class="bg-blue-50 p-6 rounded-2xl mb-8">
+                <p class="text-lg text-gray-700 mb-2">Your score:</p>
+                <p id="final-score" class="text-5xl font-black text-blue-600 mb-2">0/15</p>
+                <p id="final-stats" class="text-gray-500">Correct: 0 | Incorrect: 0</p>
+            </div>
+            <button onclick="resetQuiz()" class="bg-gray-800 hover:bg-black text-white font-bold py-3 px-8 rounded-xl btn-primary">
+                Try Again
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const data = {
+            singular: ['plate', 'sandwich', 'egg', 'bike', 'watch', 'orange', 'tomato', 'ant', 'car', 'book', 'teacher', 'apple'],
+            plural: ['biscuits', 'bottles', 'cakes', 'grapes', 'potatoes', 'sweets', 'watches', 'houses', 'babies', 'strawberries'],
+            uncountable: ['bread', 'butter', 'cheese', 'chocolate', 'coffee', 'cream', 'lemonade', 'meat', 'pasta', 'sauce', 'soup', 'tea', 'water', 'yoghurt']
+        };
+
+        const praises = ["Well done!", "Good job!", "Excellent!", "Very good!"];
+        
+        let questions = [];
+        let currentIdx = 0;
+        let mistakes = 0;
+        let totalCorrect = 0;
+        let totalIncorrect = 0;
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playTone(freq, type, duration) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        function playCorrectSound() { playTone(880, 'sine', 0.5); }
+        function playWrongSound() { playTone(220, 'square', 0.3); }
+
+        function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            const voices = speechSynthesis.getVoices();
+            const femaleVoice = voices.find(v => v.lang.includes('en') && (v.name.includes('Female') || v.name.includes('Google UK English Female') || v.name.includes('Samantha')));
+            if (femaleVoice) utterance.voice = femaleVoice;
+            utterance.lang = 'en-US';
+            utterance.rate = 0.7;
+            utterance.pitch = 1.1;
+            speechSynthesis.speak(utterance);
+        }
+
+        function getRandomItems(arr, n) {
+            return [...arr].sort(() => 0.5 - Math.random()).slice(0, n);
+        }
+
+        function determineArticle(word, type) {
+            if (type === 'uncountable' || type === 'plural') return 'some';
+            const vowels = ['a', 'e', 'i', 'o', 'u'];
+            return vowels.includes(word[0].toLowerCase()) ? 'an' : 'a';
+        }
+
+        function startQuiz() {
+            const selectedSingular = getRandomItems(data.singular, 5).map(w => ({word: w, type: 'singular', verb: "'s", art: determineArticle(w, 'singular')}));
+            const selectedPlural = getRandomItems(data.plural, 5).map(w => ({word: w, type: 'plural', verb: "are", art: 'some'}));
+            const selectedUncountable = getRandomItems(data.uncountable, 5).map(w => ({word: w, type: 'uncountable', verb: "'s", art: determineArticle(w, 'uncountable')}));
+            
+            const allSelected = [...selectedSingular, ...selectedPlural, ...selectedUncountable].sort(() => 0.5 - Math.random());
+            
+            questions = allSelected.map((q, i) => ({
+                ...q,
+                part: i < 8 ? 1 : 2
+            }));
+
+            currentIdx = 0;
+            totalCorrect = 0;
+            totalIncorrect = 0;
+            
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const q = questions[currentIdx];
+            mistakes = 0;
+            updateStatus();
+            
+            const container = document.getElementById('question-container');
+            const feedbackArea = document.getElementById('feedback-area');
+            feedbackArea.innerHTML = '';
+            document.getElementById('check-btn').classList.remove('hidden');
+            document.getElementById('next-btn').classList.add('hidden');
+
+            if (q.part === 1) {
+                document.getElementById('part-title').innerText = "Part 1: Choose the correct options";
+                container.innerHTML = `
+                    There 
+                    <select id="verb-select" class="mx-1">
+                        <option value="">...</option>
+                        <option value="'s">'s</option>
+                        <option value="are">are</option>
+                    </select>
+                    <select id="art-select" class="mx-1">
+                        <option value="">...</option>
+                        <option value="a">a</option>
+                        <option value="an">an</option>
+                        <option value="some">some</option>
+                    </select>
+                    <span class="font-bold text-blue-700">${q.word}</span>.
+                `;
+            } else {
+                document.getElementById('part-title').innerText = "Part 2: Type the full structure";
+                container.innerHTML = `
+                    <input type="text" id="manual-input" placeholder="e.g. There's a" class="w-full md:w-64 text-center mt-2" autofocus>
+                    <div class="mt-2 text-2xl font-bold text-blue-700">${q.word}.</div>
+                `;
+                document.getElementById('manual-input').addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') checkAnswer();
+                });
+            }
+        }
+
+        function updateStatus() {
+            document.getElementById('progress-text').innerText = `Question ${currentIdx + 1}/15`;
+            document.getElementById('attempts-text').innerText = `Attempts: ${mistakes}/3`;
+        }
+
+        function normalizeText(text) {
+            return text.toLowerCase().trim()
+                .replace(/[\u2018\u2019]/g, "'") // Handle smart quotes
+                .replace(/\s+/g, " ");
+        }
+
+        function checkAnswer() {
+            const q = questions[currentIdx];
+            let isCorrect = false;
+
+            if (q.part === 1) {
+                const v = document.getElementById('verb-select').value;
+                const a = document.getElementById('art-select').value;
+                isCorrect = (v === q.verb && a === q.art);
+            } else {
+                const inputVal = normalizeText(document.getElementById('manual-input').value);
+                const possibleAnswers = [];
+                
+                if (q.type === 'plural') {
+                    // Plural: There are some, There're some
+                    possibleAnswers.push("there are some");
+                    possibleAnswers.push("there're some");
+                } else {
+                    // Singular/Uncountable: There is a/some, There's a/some
+                    const fullVerb = "is";
+                    const shortVerb = "'s";
+                    possibleAnswers.push(`there ${fullVerb} ${q.art}`);
+                    possibleAnswers.push(`there${shortVerb} ${q.art}`);
+                }
+                
+                isCorrect = possibleAnswers.includes(inputVal);
+            }
+
+            if (isCorrect) {
+                handleSuccess();
+            } else {
+                handleFailure();
+            }
+        }
+
+        function handleSuccess() {
+            const q = questions[currentIdx];
+            const feedbackArea = document.getElementById('feedback-area');
+            const praise = praises[Math.floor(Math.random() * praises.length)];
+            
+            playCorrectSound();
+            totalCorrect++;
+            
+            feedbackArea.innerHTML = `<div class="text-green-600 font-bold text-2xl feedback-pop">${praise}</div>`;
+            document.getElementById('check-btn').classList.add('hidden');
+            document.getElementById('next-btn').classList.remove('hidden');
+
+            const readableVerb = q.type === 'plural' ? "are" : "is";
+            const fullSentence = `There ${readableVerb} ${q.art} ${q.word}`;
+            speak(fullSentence);
+        }
+
+        function handleFailure() {
+            mistakes++;
+            playWrongSound();
+            updateStatus();
+            
+            const feedbackArea = document.getElementById('feedback-area');
+            
+            if (mistakes >= 3) {
+                const q = questions[currentIdx];
+                totalIncorrect++;
+                const readableVerb = q.type === 'plural' ? "are" : "is";
+                const correctStr = `There ${readableVerb} ${q.art} ${q.word}`;
+                feedbackArea.innerHTML = `
+                    <div class="text-red-500 font-medium text-sm">
+                        Correct answer: <br>
+                        <span class="text-base font-bold text-gray-800">${correctStr}</span>
+                    </div>`;
+                document.getElementById('check-btn').classList.add('hidden');
+                document.getElementById('next-btn').classList.remove('hidden');
+            } else {
+                feedbackArea.innerHTML = `<div class="text-orange-500 font-bold animate-bounce">Try again!</div>`;
+                const input = document.getElementById('manual-input');
+                if (input) {
+                    input.classList.add('border-red-400');
+                    setTimeout(() => input.classList.remove('border-red-400'), 500);
+                    input.select();
+                }
+            }
+        }
+
+        function nextQuestion() {
+            currentIdx++;
+            if (currentIdx < questions.length) {
+                renderQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            document.getElementById('final-score').innerText = `${totalCorrect}/15`;
+            document.getElementById('final-stats').innerText = `Correct: ${totalCorrect} | Incorrect: ${totalIncorrect}`;
+        }
+
+        function resetQuiz() {
+            startQuiz();
+        }
+
+        window.speechSynthesis.onvoiceschanged = () => {};
+    </script>
+</body>
+</html>
