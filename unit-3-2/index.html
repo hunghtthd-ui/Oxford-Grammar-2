@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Grammar Practice - There is / There are</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Lexend', sans-serif;
+            background-color: #f0f4f8;
+            touch-action: manipulation;
+        }
+
+        .option-btn {
+            transition: all 0.2s ease;
+        }
+
+        .option-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .hidden-section {
+            display: none !important;
+        }
+
+        .feedback-animation {
+            animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes pop {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        input:focus {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div id="app" class="bg-white rounded-3xl shadow-xl w-full max-w-2xl p-6 md:p-10">
+        <!-- Start Screen -->
+        <div id="start-screen" class="text-center">
+            <h1 class="text-3xl font-bold text-blue-600 mb-4">Grammar Challenge</h1>
+            <p class="text-gray-600 mb-2">Section 1: Multiple Choice</p>
+            <p class="text-gray-600 mb-8">Section 2: Short Answer (Yes/No)</p>
+            <button onclick="startApp()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-10 rounded-2xl shadow-lg transition-all text-xl">
+                Start Quiz
+            </button>
+        </div>
+
+        <!-- Quiz Container -->
+        <div id="quiz-container" class="hidden-section">
+            <!-- Progress Info -->
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <span id="section-label" class="block text-xs font-bold text-blue-500 uppercase mb-1">Section 1</span>
+                    <span id="progress-text" class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Question 1 of 15</span>
+                </div>
+                <div class="h-2 w-32 bg-gray-200 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="h-full bg-blue-500 transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Question Box -->
+            <div id="question-box" class="mb-8">
+                <div class="flex items-start gap-3 mb-4">
+                    <button id="speak-btn" title="Listen to question" class="mt-1 p-3 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200 transition-colors flex-shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                    </button>
+                    <h2 id="question-text" class="text-xl md:text-2xl font-medium text-gray-800 leading-relaxed"></h2>
+                </div>
+
+                <!-- MCQ Options (Ex 1) -->
+                <div id="mcq-options" class="grid grid-cols-2 gap-4 mt-6">
+                    <!-- Buttons injected via JS -->
+                </div>
+
+                <!-- Input Box (Ex 2) -->
+                <div id="input-container" class="hidden-section mt-6">
+                    <div class="flex flex-col md:flex-row gap-4 items-center">
+                        <input type="text" id="answer-input" autocomplete="off" placeholder="Type your answer..." class="w-full bg-gray-50 border-2 border-gray-200 rounded-xl px-5 py-3 text-lg focus:border-blue-500 transition-all">
+                        <button onclick="checkInputAnswer()" class="w-full md:w-auto bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-xl transition-all">
+                            Check
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2 italic">Tip: Press Enter to check your answer.</p>
+                </div>
+            </div>
+
+            <!-- Feedback Area -->
+            <div id="feedback-area" class="hidden-section text-center py-4 rounded-2xl">
+                <p id="feedback-msg" class="text-xl font-bold mb-3"></p>
+                <div id="correct-answer-display" class="hidden-section text-red-600 font-bold mb-3 p-2 bg-white rounded-lg border border-red-100"></div>
+                <button id="next-btn" onclick="nextQuestion()" class="bg-gray-800 hover:bg-black text-white px-8 py-3 rounded-xl font-semibold transition-all shadow-md">
+                    Next Question →
+                </button>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="hidden-section text-center">
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">Quiz Finished!</h2>
+            <div class="text-6xl my-6">🏆</div>
+            <div class="bg-blue-50 rounded-3xl p-8 mb-8">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="text-center">
+                        <p class="text-sm text-gray-500 uppercase font-bold">Total Score</p>
+                        <p id="final-score" class="text-4xl font-bold text-green-600">0</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-sm text-gray-500 uppercase font-bold">Errors</p>
+                        <p id="final-wrongs" class="text-4xl font-bold text-red-600">0</p>
+                    </div>
+                </div>
+            </div>
+            <button onclick="resetApp()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-12 rounded-2xl transition-all shadow-lg text-lg">
+                Try Again
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const EXERCISE_1 = [
+            { type: 'mcq', text: 'There ____ some apples on the table.', original: 'There (is or are) some apples on the table.', options: ['is', 'are'], answer: 'are' },
+            { type: 'mcq', text: 'There ____ a dog in the garden.', original: 'There (is or are) a dog in the garden.', options: ['is', 'are'], answer: 'is' },
+            { type: 'mcq', text: 'There isn’t ____ milk in the fridge.', original: 'There isn’t (some or any) milk in the fridge.', options: ['some', 'any'], answer: 'any' },
+            { type: 'mcq', text: 'There aren’t ____ chairs in the room.', original: 'There aren’t (some or any) chairs in the room.', options: ['some', 'any'], answer: 'any' },
+            { type: 'mcq', text: 'There ____ some water in the bottle.', original: 'There (is or are) some water in the bottle.', options: ['is', 'are'], answer: 'is' },
+            { type: 'mcq', text: 'There ____ two books on the desk.', original: 'There (is or are) two books on the desk.', options: ['is', 'are'], answer: 'are' },
+            { type: 'mcq', text: 'There isn’t ____ sugar in my coffee.', original: 'There isn’t (some or any) sugar in my coffee.', options: ['some', 'any'], answer: 'any' },
+            { type: 'mcq', text: 'There ____ an orange in the bag.', original: 'There (is or are) an orange in the bag.', options: ['is', 'are'], answer: 'is' },
+            { type: 'mcq', text: 'There aren’t ____ students in the classroom.', original: 'There aren’t (some or any) students in the classroom.', options: ['some', 'any'], answer: 'any' },
+            { type: 'mcq', text: 'There ____ some rice in the bowl.', original: 'There (is or are) some rice in the bowl.', options: ['is', 'are'], answer: 'is' }
+        ];
+
+        const EXERCISE_2 = [
+            { type: 'input', text: 'Is there any milk? → Yes, __________.', answer: 'there is' },
+            { type: 'input', text: 'Are there any apples? → No, __________.', answer: 'there aren’t' },
+            { type: 'input', text: 'Is there any water in the bottle? → No, __________.', answer: 'there isn’t' },
+            { type: 'input', text: 'Are there any books on the table? → Yes, __________.', answer: 'there are' },
+            { type: 'input', text: 'Is there any sugar in your tea? → Yes, __________.', answer: 'there is' }
+        ];
+
+        const praises = ["Well done!", "Good job!", "Excellent!", "Very good!"];
+        let allQuestions = [];
+        let currentIndex = 0;
+        let score = 0;
+        let totalWrongs = 0;
+        let currentQuestionWrongs = 0;
+        let isLocked = false;
+
+        const synth = window.speechSynthesis;
+        let femaleVoice = null;
+
+        function initVoices() {
+            const voices = synth.getVoices();
+            femaleVoice = voices.find(v => v.lang.includes('en') && (v.name.includes('Female') || v.name.includes('Google US English') || v.name.includes('Samantha'))) || voices[0];
+        }
+        
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = initVoices;
+        }
+
+        function speak(text) {
+            if (synth.speaking) synth.cancel();
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.voice = femaleVoice;
+            utter.rate = 0.8;
+            utter.pitch = 1.1;
+            synth.speak(utter);
+        }
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function startApp() {
+            const part1 = shuffle([...EXERCISE_1]);
+            const part2 = shuffle([...EXERCISE_2]);
+            allQuestions = [...part1, ...part2];
+            
+            currentIndex = 0;
+            score = 0;
+            totalWrongs = 0;
+            
+            document.getElementById('start-screen').classList.add('hidden-section');
+            document.getElementById('result-screen').classList.add('hidden-section');
+            document.getElementById('quiz-container').classList.remove('hidden-section');
+            
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const q = allQuestions[currentIndex];
+            isLocked = false;
+            currentQuestionWrongs = 0;
+            
+            const sectionLabel = document.getElementById('section-label');
+            const mcqContainer = document.getElementById('mcq-options');
+            const inputContainer = document.getElementById('input-container');
+
+            if (q.type === 'mcq') {
+                sectionLabel.innerText = "Section 1: Multiple Choice";
+                sectionLabel.className = "block text-xs font-bold text-blue-500 uppercase mb-1";
+                
+                // Show MCQ, Hide Input
+                mcqContainer.classList.remove('hidden-section');
+                inputContainer.classList.add('hidden-section');
+                
+                mcqContainer.innerHTML = '';
+                q.options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn bg-white border-2 border-blue-100 hover:border-blue-500 hover:bg-blue-50 text-blue-700 font-bold py-4 rounded-2xl shadow-sm transition-all text-lg';
+                    btn.innerText = opt;
+                    btn.onclick = () => checkMcqAnswer(opt);
+                    mcqContainer.appendChild(btn);
+                });
+            } else {
+                sectionLabel.innerText = "Section 2: Short Answer";
+                sectionLabel.className = "block text-xs font-bold text-green-500 uppercase mb-1";
+                
+                // Hide MCQ, Show Input
+                mcqContainer.classList.add('hidden-section');
+                inputContainer.classList.remove('hidden-section');
+                
+                const input = document.getElementById('answer-input');
+                input.value = '';
+                setTimeout(() => input.focus(), 100);
+            }
+
+            document.getElementById('progress-text').innerText = `Question ${currentIndex + 1} of ${allQuestions.length}`;
+            document.getElementById('progress-bar').style.width = `${((currentIndex) / allQuestions.length) * 100}%`;
+            document.getElementById('question-text').innerText = q.text;
+            document.getElementById('feedback-area').classList.add('hidden-section');
+            document.getElementById('correct-answer-display').classList.add('hidden-section');
+            
+            const textToSpeak = q.original || q.text;
+            document.getElementById('speak-btn').onclick = () => speak(textToSpeak);
+        }
+
+        function checkMcqAnswer(selected) {
+            if (isLocked) return;
+            const q = allQuestions[currentIndex];
+            if (selected === q.answer) {
+                handleSuccess();
+            } else {
+                handleFailure();
+            }
+        }
+
+        function checkInputAnswer() {
+            if (isLocked) return;
+            const q = allQuestions[currentIndex];
+            const inputVal = document.getElementById('answer-input').value.trim().toLowerCase();
+            
+            const normalizedInput = inputVal.replace(/'/g, "’");
+            const normalizedAnswer = q.answer.toLowerCase();
+
+            if (normalizedInput === normalizedAnswer) {
+                handleSuccess();
+            } else {
+                handleFailure();
+            }
+        }
+
+        function handleSuccess() {
+            isLocked = true;
+            score++;
+            const feedbackArea = document.getElementById('feedback-area');
+            const msg = document.getElementById('feedback-msg');
+            
+            msg.innerText = praises[Math.floor(Math.random() * praises.length)];
+            msg.className = "text-2xl font-bold text-green-600 feedback-animation";
+            feedbackArea.className = "mt-6 p-6 bg-green-50 rounded-2xl block text-center border-2 border-green-100";
+            feedbackArea.classList.remove('hidden-section');
+
+            playTone(440, 0.1, 'sine');
+            document.getElementById('progress-bar').style.width = `${((currentIndex + 1) / allQuestions.length) * 100}%`;
+        }
+
+        function handleFailure() {
+            totalWrongs++;
+            currentQuestionWrongs++;
+            
+            const q = allQuestions[currentIndex];
+            playTone(150, 0.2, 'sawtooth');
+            
+            if (currentQuestionWrongs >= 3) {
+                isLocked = true;
+                const feedbackArea = document.getElementById('feedback-area');
+                const msg = document.getElementById('feedback-msg');
+                const correctDisp = document.getElementById('correct-answer-display');
+                
+                msg.innerText = "Don't worry!";
+                msg.className = "text-xl font-bold text-orange-600";
+                correctDisp.innerHTML = `<span class="text-gray-500 font-normal">Answer:</span> ${q.answer}`;
+                correctDisp.classList.remove('hidden-section');
+                feedbackArea.className = "mt-6 p-6 bg-orange-50 rounded-2xl block text-center border-2 border-orange-100";
+                feedbackArea.classList.remove('hidden-section');
+            } else {
+                const box = document.getElementById('question-box');
+                box.classList.add('animate-pulse');
+                setTimeout(() => box.classList.remove('animate-pulse'), 500);
+                
+                if(q.type === 'input') {
+                    const input = document.getElementById('answer-input');
+                    input.classList.add('border-red-400');
+                    setTimeout(() => {
+                        input.classList.remove('border-red-400');
+                        input.value = '';
+                    }, 500);
+                }
+            }
+        }
+
+        function nextQuestion() {
+            currentIndex++;
+            if (currentIndex < allQuestions.length) {
+                showQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById('quiz-container').classList.add('hidden-section');
+            document.getElementById('result-screen').classList.remove('hidden-section');
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('final-wrongs').innerText = totalWrongs;
+        }
+
+        function resetApp() {
+            startApp();
+        }
+
+        function playTone(freq, duration, type) {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+
+                oscillator.type = type;
+                oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + duration);
+            } catch(e) { console.log("Audio not supported"); }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const quizVisible = !document.getElementById('quiz-container').classList.contains('hidden-section');
+                const feedbackHidden = document.getElementById('feedback-area').classList.contains('hidden-section');
+                
+                if (quizVisible) {
+                    if (feedbackHidden) {
+                        const q = allQuestions[currentIndex];
+                        if (q.type === 'input') {
+                            checkInputAnswer();
+                        }
+                    } else {
+                        nextQuestion();
+                    }
+                } else {
+                    const startVisible = !document.getElementById('start-screen').classList.contains('hidden-section');
+                    const endVisible = !document.getElementById('result-screen').classList.contains('hidden-section');
+                    if (startVisible) startApp();
+                    else if (endVisible) resetApp();
+                }
+            }
+        });
+
+        window.onload = initVoices;
+    </script>
+</body>
+</html>
