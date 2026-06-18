@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Grammar Practice - Pronouns & Adjectives</title>
+    <!-- Tailwind CSS for modern responsive UI styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons for clean visuals -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Custom smooth transition for interactive elements */
+        .transition-all {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        /* Custom pulses and animations */
+        @keyframes customPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .correct-pulse {
+            animation: customPulse 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col items-center justify-between font-sans antialiased text-slate-800">
+
+    <!-- Header Section -->
+    <header class="w-full bg-white border-b border-slate-200 py-4 px-6 shadow-sm">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-indigo-600 text-white p-2 rounded-lg">
+                    <i data-lucide="graduation-cap" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg text-slate-900 leading-tight">Grammar Master</h1>
+                    <p class="text-xs text-indigo-600 font-medium tracking-wide uppercase">Practice Hub</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-full text-xs font-semibold text-slate-600">
+                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                Interactive TTS Enabled
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-grow w-full max-w-2xl px-4 py-8 flex flex-col justify-center">
+        
+        <!-- ================= WELCOME SCREEN ================= -->
+        <div id="welcome-screen" class="bg-white rounded-2xl shadow-xl p-8 border border-slate-100 text-center transition-all duration-300">
+            <span class="inline-flex p-4 rounded-full bg-indigo-50 text-indigo-600 mb-6">
+                <i data-lucide="book-open" class="w-10 h-10"></i>
+            </span>
+            <h2 class="text-3xl font-extrabold text-slate-950 mb-2">Grammar Quiz</h2>
+            <p class="text-slate-500 text-sm mb-6">Master these essential English foundation topics:</p>
+            
+            <!-- Highlighted Topics -->
+            <div class="grid grid-cols-1 gap-3 max-w-md mx-auto mb-8">
+                <div class="flex items-center gap-3 bg-indigo-50/50 p-3 rounded-xl border border-indigo-100/50">
+                    <span class="flex-shrink-0 w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-sm">1</span>
+                    <span class="font-semibold text-slate-800 text-left">Subject Pronouns</span>
+                </div>
+                <div class="flex items-center gap-3 bg-indigo-50/50 p-3 rounded-xl border border-indigo-100/50">
+                    <span class="flex-shrink-0 w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-sm">2</span>
+                    <span class="font-semibold text-slate-800 text-left">Object Pronouns</span>
+                </div>
+                <div class="flex items-center gap-3 bg-indigo-50/50 p-3 rounded-xl border border-indigo-100/50">
+                    <span class="flex-shrink-0 w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-sm">3</span>
+                    <span class="font-semibold text-slate-800 text-left">Possessive Adjectives</span>
+                </div>
+            </div>
+
+            <!-- Quiz Instructions Summary -->
+            <div class="mb-8 p-4 bg-amber-50 border border-amber-200 rounded-xl text-left text-xs text-amber-800 leading-relaxed">
+                <p class="font-bold mb-1"><i data-lucide="info" class="w-4 h-4 inline-block mr-1 align-text-bottom"></i> How to play:</p>
+                <ul class="list-disc pl-5 space-y-1">
+                    <li>Read/Listen to the sentences and choose the correct option.</li>
+                    <li>Automatic female speech reads each question out loud slowly.</li>
+                    <li>Keyboard shortcuts: Press <kbd class="px-1.5 py-0.5 bg-amber-200 rounded text-amber-900 font-mono">1</kbd>, <kbd class="px-1.5 py-0.5 bg-amber-200 rounded text-amber-900 font-mono">2</kbd>, or <kbd class="px-1.5 py-0.5 bg-amber-200 rounded text-amber-900 font-mono">3</kbd> to select answers, and <kbd class="px-1.5 py-0.5 bg-amber-200 rounded text-amber-900 font-mono">Enter</kbd> to verify or continue.</li>
+                </ul>
+            </div>
+
+            <button onclick="startQuiz()" class="w-full md:w-auto px-8 py-4 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white font-bold rounded-xl shadow-lg shadow-indigo-200 transition-all text-lg flex items-center justify-center gap-2 mx-auto">
+                Start Learning Now <i data-lucide="arrow-right" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+
+        <!-- ================= QUIZ SCREEN ================= -->
+        <div id="quiz-screen" class="hidden bg-white rounded-2xl shadow-xl p-6 md:p-8 border border-slate-100 transition-all duration-300">
+            <!-- Progress & Stats Header -->
+            <div class="flex justify-between items-center mb-6">
+                <div class="text-sm font-semibold text-slate-500">
+                    Question <span id="current-question-idx" class="text-indigo-600 text-lg">1</span> / <span id="total-questions-cnt">15</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs bg-red-100 text-red-700 px-3 py-1.5 rounded-full font-bold flex items-center gap-1">
+                        <i data-lucide="x-circle" class="w-3.5 h-3.5"></i> Attempts: <span id="attempts-left">3</span>
+                    </span>
+                    <span class="text-xs bg-green-100 text-green-700 px-3 py-1.5 rounded-full font-bold flex items-center gap-1">
+                        <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Score: <span id="current-score">0</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Visual Progress Bar -->
+            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden mb-8">
+                <div id="progress-bar" class="bg-indigo-600 h-full w-0 transition-all duration-300"></div>
+            </div>
+
+            <!-- TTS Speaker Button and Question Container -->
+            <div class="bg-indigo-50/40 rounded-2xl p-6 border border-indigo-100/50 mb-6 relative">
+                <button onclick="speakQuestion()" class="absolute top-4 right-4 bg-white p-2 rounded-full border border-slate-200 hover:border-indigo-300 hover:text-indigo-600 shadow-sm transition-all group" title="Listen to question">
+                    <i data-lucide="volume-2" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+                </button>
+                <div class="pr-12">
+                    <span class="text-xs font-bold text-indigo-600 uppercase tracking-widest block mb-1">Fill in the blank:</span>
+                    <p id="question-text" class="text-xl md:text-2xl font-bold text-slate-900 leading-relaxed">Anna is my friend. _____ is 9 years old.</p>
+                </div>
+            </div>
+
+            <!-- Multiple Choice Options -->
+            <div class="space-y-3 mb-6" id="options-container">
+                <!-- Dynamically generated buttons go here -->
+            </div>
+
+            <!-- Feedback & Action Panel -->
+            <div class="min-h-[80px] flex flex-col justify-center items-center">
+                <!-- Feedback Toast -->
+                <div id="feedback-alert" class="hidden w-full p-4 rounded-xl text-center font-bold mb-4 flex items-center justify-center gap-2 transform transition-all duration-200 scale-95 opacity-0">
+                    <!-- Icon and text injected via JS -->
+                </div>
+
+                <!-- Control Button -->
+                <button id="action-btn" class="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span>Submit Answer</span> <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+
+
+        <!-- ================= SCORE / STATS SCREEN ================= -->
+        <div id="score-screen" class="hidden bg-white rounded-2xl shadow-xl p-8 border border-slate-100 text-center transition-all duration-300">
+            <span class="inline-flex p-4 rounded-full bg-green-50 text-green-600 mb-6">
+                <i data-lucide="trophy" class="w-12 h-12"></i>
+            </span>
+            <h2 class="text-3xl font-extrabold text-slate-950 mb-1">Well Done!</h2>
+            <p class="text-slate-500 text-sm mb-6">You have completed your pronouns practice.</p>
+
+            <!-- Detailed Stats Layout -->
+            <div class="grid grid-cols-2 gap-4 max-w-md mx-auto mb-8">
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                    <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wide">Correct Answers</span>
+                    <span id="stat-correct" class="text-3xl font-extrabold text-green-600">0</span>
+                    <span class="block text-xs text-slate-400 mt-1">on first attempt</span>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                    <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wide">Incorrect Attempts</span>
+                    <span id="stat-wrong" class="text-3xl font-extrabold text-red-500">0</span>
+                    <span class="block text-xs text-slate-400 mt-1">total failed tries</span>
+                </div>
+            </div>
+
+            <!-- Final Rating & Message -->
+            <div class="mb-8 p-4 bg-indigo-50 border border-indigo-100 rounded-xl max-w-md mx-auto">
+                <p id="final-summary-text" class="text-indigo-900 font-semibold text-sm">Excellent effort! Keep practicing to secure your confidence in grammar.</p>
+            </div>
+
+            <!-- Retry Button -->
+            <button onclick="restartQuiz()" class="w-full md:w-auto px-8 py-4 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white font-bold rounded-xl shadow-lg shadow-indigo-200 transition-all text-lg flex items-center justify-center gap-2 mx-auto">
+                <i data-lucide="rotate-ccw" class="w-5 h-5"></i> Practice Again
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Footer Copyright -->
+    <footer class="w-full py-6 text-center text-xs text-slate-400 border-t border-slate-100 bg-white">
+        <p>&copy; 2026 Grammar Master Hub. Designed for Github Pages deployment.</p>
+    </footer>
+
+    <!-- Audio Synthesis & Logic Script -->
+    <script>
+        // Database of MCQ Questions
+        // ✅ represents correct index (0-based)
+        const QUESTIONS_POOL = [
+            {
+                q: "Anna is my friend. _____ is 9 years old.",
+                options: ["She", "Her", "Him"],
+                correct: 0
+            },
+            {
+                q: "My brother and I like football. _____ play every weekend.",
+                options: ["We", "Us", "Our"],
+                correct: 0
+            },
+            {
+                q: "Look at Tom! _____ is riding a bike.",
+                options: ["He", "Him", "His"],
+                correct: 0
+            },
+            {
+                q: "My parents are in the kitchen. _____ are cooking dinner.",
+                options: ["They", "Them", "Their"],
+                correct: 0
+            },
+            {
+                q: "This is my dog. _____ likes fish and meat.",
+                options: ["It", "Its", "Him"],
+                correct: 0
+            },
+            {
+                q: "Emma is in the tree. I can see _____.",
+                options: ["she", "her", "hers"],
+                correct: 1
+            },
+            {
+                q: "My teacher helps _____ with English.",
+                options: ["we", "our", "us"],
+                correct: 2
+            },
+            {
+                q: "Tom is talking to Ben and _____.",
+                options: ["I", "me", "my"],
+                correct: 1
+            },
+            {
+                q: "The puppy is cute. Can I touch _____?",
+                options: ["it", "its", "it's"],
+                correct: 0
+            },
+            {
+                q: "Dad is calling Jack. Please tell _____ to come here.",
+                options: ["he", "his", "him"],
+                correct: 2
+            },
+            {
+                q: "Lucy has a new bike. _____ bike is pink.",
+                options: ["Her", "She", "Hers"],
+                correct: 0
+            },
+            {
+                q: "I have a cat. _____ cat is black and white.",
+                options: ["Me", "My", "Mine"],
+                correct: 1
+            },
+            {
+                q: "Ben and Sam love football. _____ favorite team is The Fat Cat.",
+                options: ["Them", "They", "Their"],
+                correct: 2
+            },
+            {
+                q: "We are doing _____ homework now.",
+                options: ["our", "us", "we"],
+                correct: 0
+            },
+            {
+                q: "The dog is eating _____ food.",
+                options: ["it", "its", "it's"],
+                correct: 1
+            }
+        ];
+
+        // System Constants
+        const MAX_ATTEMPTS = 3;
+        const PRAISE_PHRASES = ["Well done!", "Good job!", "Excellent!", "Very good!"];
+
+        // State variables
+        let questions = [];
+        let currentIdx = 0;
+        let score = 0; // Total correct answers on first try
+        let wrongAttemptsInThisQuestion = 0;
+        let totalWrongAttemptsAcrossQuiz = 0;
+        let selectedOptionIdx = null;
+        let hasCheckedCurrent = false;
+
+        // Web Speech Synth configuration
+        let synth = window.speechSynthesis;
+        let femaleVoice = null;
+
+        // Initialize Lucide icons on page render
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            loadFemaleVoice();
+            // Handle browser speech engine reload delay
+            if (speechSynthesis.onvoiceschanged !== undefined) {
+                speechSynthesis.onvoiceschanged = loadFemaleVoice;
+            }
+        });
+
+        // Tries to locate a premium English Female Voice
+        function loadFemaleVoice() {
+            if (!synth) return;
+            const voices = synth.getVoices();
+            // Preferences for standard crisp female English voices
+            const preferredVoices = [
+                "Google US English", 
+                "Microsoft Zira", 
+                "Samantha", 
+                "Victoria", 
+                "en-US", 
+                "en-GB"
+            ];
+            
+            // Try to match specific preferred lists
+            for (let pref of preferredVoices) {
+                const found = voices.find(v => v.name.includes(pref) || v.lang.startsWith(pref));
+                if (found) {
+                    femaleVoice = found;
+                    break;
+                }
+            }
+            // Fallback to any English voice
+            if (!femaleVoice) {
+                femaleVoice = voices.find(v => v.lang.startsWith('en'));
+            }
+        }
+
+        // TTS voice reader helper with female filter configuration
+        function speakText(text) {
+            if (!synth) return;
+            synth.cancel(); // Stop any current speech immediately
+            const utterance = new SpeechSynthesisUtterance(text);
+            if (femaleVoice) {
+                utterance.voice = femaleVoice;
+            }
+            // Set slow and clear speech configurations
+            utterance.rate = 0.85; 
+            utterance.pitch = 1.1; // Slightly higher pitch for female output range
+            synth.speak(utterance);
+        }
+
+        // Fisher-Yates shuffle to randomize elements inside an array
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex != 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        // Start Learning handler
+        function startQuiz() {
+            // Randomize questions for the quiz run
+            questions = shuffle(JSON.parse(JSON.stringify(QUESTIONS_POOL)));
+            currentIdx = 0;
+            score = 0;
+            totalWrongAttemptsAcrossQuiz = 0;
+            
+            // Toggle screens
+            document.getElementById('welcome-screen').classList.add('hidden');
+            document.getElementById('score-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+
+            renderQuestion();
+        }
+
+        // Render current question
+        function renderQuestion() {
+            const questionData = questions[currentIdx];
+            wrongAttemptsInThisQuestion = 0;
+            selectedOptionIdx = null;
+            hasCheckedCurrent = false;
+
+            // Reset action button style and text
+            const actionBtn = document.getElementById('action-btn');
+            actionBtn.innerHTML = `<span>Submit Answer</span> <i data-lucide="arrow-right" class="w-5 h-5"></i>`;
+            actionBtn.className = "w-full py-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-2";
+            actionBtn.disabled = true; // Disable until option selected
+
+            // Reset attempts left metric
+            document.getElementById('attempts-left').textContent = MAX_ATTEMPTS;
+            document.getElementById('current-score').textContent = score;
+
+            // Render stats
+            document.getElementById('current-question-idx').textContent = currentIdx + 1;
+            document.getElementById('total-questions-cnt').textContent = questions.length;
+            
+            // Progress Bar update
+            const progressPct = ((currentIdx) / questions.length) * 100;
+            document.getElementById('progress-bar').style.width = `${progressPct}%`;
+
+            // Hide previous Feedback alert
+            const feedbackAlert = document.getElementById('feedback-alert');
+            feedbackAlert.className = "hidden w-full p-4 rounded-xl text-center font-bold mb-4 flex items-center justify-center gap-2 transform scale-95 opacity-0";
+
+            // Render text
+            document.getElementById('question-text').textContent = questionData.q;
+
+            // Render choices
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            questionData.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.id = `option-btn-${idx}`;
+                btn.onclick = () => selectOption(idx);
+                // Structured buttons with option index layout
+                btn.className = "w-full text-left p-4 rounded-xl border border-slate-200 hover:border-indigo-500 hover:bg-indigo-50/20 bg-white transition-all font-semibold flex items-center justify-between text-slate-700 shadow-sm outline-none";
+                btn.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 font-bold border border-slate-200 option-badge" id="badge-${idx}">${idx + 1}</span>
+                        <span class="text-base font-medium option-txt">${opt}</span>
+                    </div>
+                    <div class="status-icon" id="status-icon-${idx}"></div>
+                `;
+                optionsContainer.appendChild(btn);
+            });
+
+            lucide.createIcons();
+            
+            // Speak automatically on load
+            setTimeout(() => {
+                speakQuestion();
+            }, 500);
+        }
+
+        // Speech function for current question text only
+        function speakQuestion() {
+            if (currentIdx < questions.length) {
+                const textToSpeak = questions[currentIdx].q.replace('_____', 'blank');
+                speakText(textToSpeak);
+            }
+        }
+
+        // Choice Selection
+        function selectOption(idx) {
+            if (hasCheckedCurrent) return; // Prevent selection changes post verification
+            
+            selectedOptionIdx = idx;
+            document.getElementById('action-btn').disabled = false;
+
+            // Highlight chosen item UI state
+            const questionData = questions[currentIdx];
+            questionData.options.forEach((_, i) => {
+                const btn = document.getElementById(`option-btn-${i}`);
+                const badge = document.getElementById(`badge-${i}`);
+                if (i === idx) {
+                    btn.className = "w-full text-left p-4 rounded-xl border-2 border-indigo-600 bg-indigo-50/40 transition-all font-semibold flex items-center justify-between text-indigo-950 shadow-sm outline-none";
+                    badge.className = "w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold border border-indigo-700 option-badge";
+                } else {
+                    btn.className = "w-full text-left p-4 rounded-xl border border-slate-200 hover:border-indigo-500 hover:bg-indigo-50/20 bg-white transition-all font-semibold flex items-center justify-between text-slate-700 shadow-sm outline-none";
+                    badge.className = "w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 font-bold border border-slate-200 option-badge";
+                }
+            });
+        }
+
+        // Logic Check submission
+        function handleQuizAction() {
+            if (!hasCheckedCurrent) {
+                checkAnswer();
+            } else {
+                nextQuestion();
+            }
+        }
+
+        // Checking user inputs
+        function checkAnswer() {
+            if (selectedOptionIdx === null) return;
+
+            const questionData = questions[currentIdx];
+            const isCorrect = (selectedOptionIdx === questionData.correct);
+            const feedbackAlert = document.getElementById('feedback-alert');
+            const actionBtn = document.getElementById('action-btn');
+
+            if (isCorrect) {
+                // Correct answer process
+                hasCheckedCurrent = true;
+                if (wrongAttemptsInThisQuestion === 0) {
+                    score++;
+                }
+
+                // Add animations
+                document.getElementById('quiz-screen').classList.add('correct-pulse');
+                setTimeout(() => {
+                    document.getElementById('quiz-screen').classList.remove('correct-pulse');
+                }, 500);
+
+                // Highlight correct option
+                const correctBtn = document.getElementById(`option-btn-${selectedOptionIdx}`);
+                correctBtn.className = "w-full text-left p-4 rounded-xl border-2 border-green-500 bg-green-50/40 transition-all font-semibold flex items-center justify-between text-green-950 shadow-sm outline-none";
+                document.getElementById(`badge-${selectedOptionIdx}`).className = "w-8 h-8 rounded-lg bg-green-600 flex items-center justify-center text-white font-bold border border-green-700 option-badge";
+                document.getElementById(`status-icon-${selectedOptionIdx}`).innerHTML = `<i data-lucide="check" class="w-5 h-5 text-green-600"></i>`;
+
+                // Render random praise banner
+                const praise = PRAISE_PHRASES[Math.floor(Math.random() * PRAISE_PHRASES.length)];
+                feedbackAlert.className = "w-full p-4 rounded-xl text-center font-bold mb-4 flex items-center justify-center gap-2 transform transition-all duration-300 scale-100 opacity-100 bg-green-100 text-green-800 border border-green-200";
+                feedbackAlert.innerHTML = `<i data-lucide="sparkles" class="w-5 h-5 text-green-600"></i> ${praise}`;
+                
+                // Voice reading congratulations message
+                speakText(praise);
+
+                // Update control action button to advance
+                actionBtn.innerHTML = `<span>Next Question</span> <i data-lucide="arrow-right" class="w-5 h-5"></i>`;
+                actionBtn.className = "w-full py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-2";
+            } else {
+                // Incorrect answer logic
+                wrongAttemptsInThisQuestion++;
+                totalWrongAttemptsAcrossQuiz++;
+
+                // Red pulse on current incorrect selected item
+                const wrongBtn = document.getElementById(`option-btn-${selectedOptionIdx}`);
+                wrongBtn.className = "w-full text-left p-4 rounded-xl border-2 border-red-500 bg-red-50/40 transition-all font-semibold flex items-center justify-between text-red-950 shadow-sm outline-none";
+                document.getElementById(`badge-${selectedOptionIdx}`).className = "w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center text-white font-bold border border-red-700 option-badge";
+                document.getElementById(`status-icon-${selectedOptionIdx}`).innerHTML = `<i data-lucide="x" class="w-5 h-5 text-red-600"></i>`;
+
+                const remainingAttempts = MAX_ATTEMPTS - wrongAttemptsInThisQuestion;
+                document.getElementById('attempts-left').textContent = remainingAttempts;
+
+                if (remainingAttempts > 0) {
+                    // Allowed to retry
+                    feedbackAlert.className = "w-full p-4 rounded-xl text-center font-bold mb-4 flex items-center justify-center gap-2 transform transition-all duration-300 scale-100 opacity-100 bg-amber-50 text-amber-800 border border-amber-200";
+                    feedbackAlert.innerHTML = `<i data-lucide="alert-circle" class="w-5 h-5 text-amber-600"></i> Incorrect! Try again.`;
+                    
+                    speakText("Incorrect. Please try again.");
+
+                    // Reset selected option so they can retry
+                    selectedOptionIdx = null;
+                    actionBtn.disabled = true;
+                } else {
+                    // Maximum limit of 3 wrong answers hit -> show correct answer
+                    hasCheckedCurrent = true;
+
+                    // Display all options and highlight the correct one
+                    questionData.options.forEach((_, idx) => {
+                        const btn = document.getElementById(`option-btn-${idx}`);
+                        const badge = document.getElementById(`badge-${idx}`);
+                        if (idx === questionData.correct) {
+                            btn.className = "w-full text-left p-4 rounded-xl border-2 border-green-500 bg-green-50/40 transition-all font-semibold flex items-center justify-between text-green-950 shadow-sm outline-none";
+                            badge.className = "w-8 h-8 rounded-lg bg-green-600 flex items-center justify-center text-white font-bold border border-green-700 option-badge";
+                            document.getElementById(`status-icon-${idx}`).innerHTML = `<i data-lucide="check" class="w-5 h-5 text-green-600"></i>`;
+                        }
+                    });
+
+                    feedbackAlert.className = "w-full p-4 rounded-xl text-center font-bold mb-4 flex items-center justify-center gap-2 transform transition-all duration-300 scale-100 opacity-100 bg-red-100 text-red-800 border border-red-200";
+                    feedbackAlert.innerHTML = `<i data-lucide="help-circle" class="w-5 h-5 text-red-600"></i> Out of attempts! The correct answer is: "${questionData.options[questionData.correct]}".`;
+
+                    speakText(`Out of attempts. The correct answer is: ${questionData.options[questionData.correct]}`);
+
+                    actionBtn.innerHTML = `<span>Next Question</span> <i data-lucide="arrow-right" class="w-5 h-5"></i>`;
+                    actionBtn.className = "w-full py-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-2";
+                }
+            }
+
+            lucide.createIcons();
+        }
+
+        // Next Question setup
+        function nextQuestion() {
+            currentIdx++;
+            if (currentIdx < questions.length) {
+                renderQuestion();
+            } else {
+                showFinalResults();
+            }
+        }
+
+        // Show Scoreboard Screen
+        function showFinalResults() {
+            // Update visual state of layouts
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('score-screen').classList.remove('hidden');
+
+            // Set final stats text
+            document.getElementById('stat-correct').textContent = `${score} / ${questions.length}`;
+            document.getElementById('stat-wrong').textContent = totalWrongAttemptsAcrossQuiz;
+
+            // Generate contextual final comments
+            const scorePct = (score / questions.length) * 100;
+            let summaryText = "";
+            let speechSummary = "";
+
+            if (scorePct >= 90) {
+                summaryText = "Masterful performance! You have a near-perfect understanding of pronouns and possessives!";
+                speechSummary = "Congratulations! Masterful performance! You are amazing.";
+            } else if (scorePct >= 70) {
+                summaryText = "Excellent job! You have clearly got a strong grasp of these concepts.";
+                speechSummary = "Excellent job! You did great.";
+            } else if (scorePct >= 50) {
+                summaryText = "Good effort! Review the questions you got wrong and try practicing again to improve.";
+                speechSummary = "Good effort! Keep practicing to get better.";
+            } else {
+                summaryText = "Don't worry! Practice makes perfect. Try going through the quiz once more.";
+                speechSummary = "Don't worry. Practice makes perfect. Try again.";
+            }
+
+            document.getElementById('final-summary-text').textContent = summaryText;
+            speakText(speechSummary);
+        }
+
+        // Restart Handler
+        function restartQuiz() {
+            startQuiz();
+        }
+
+        // Setup Events & Click Subscriptions
+        document.getElementById('action-btn').addEventListener('click', handleQuizAction);
+
+        // Global Keyboard Event Listeners for Computer-friendly Interactions
+        document.addEventListener('keydown', (e) => {
+            const isQuizVisible = !document.getElementById('quiz-screen').classList.contains('hidden');
+            if (!isQuizVisible) return;
+
+            // Press 1, 2, or 3 to select multiple choice options
+            if (e.key === '1' || e.key === '2' || e.key === '3') {
+                const optIdx = parseInt(e.key) - 1;
+                const optBtn = document.getElementById(`option-btn-${optIdx}`);
+                if (optBtn && !hasCheckedCurrent) {
+                    selectOption(optIdx);
+                }
+            }
+
+            // Press Enter to submit answer or transition to the next question
+            if (e.key === 'Enter') {
+                const actionBtn = document.getElementById('action-btn');
+                if (actionBtn && !actionBtn.disabled) {
+                    handleQuizAction();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
